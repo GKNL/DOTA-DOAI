@@ -125,9 +125,10 @@ class DetectionNetwork(object):
     def roi_pooling(self, feature_maps, rois, img_shape, scope):
         '''
         Here use roi warping as roi_pooling
+        根据RPN生成的在原图中的minibatch anchors，映射到feature map上并进行resize，得到最终送入FastRCNN两分支的rois_features
 
         :param featuremaps_dict: feature map to crop
-        :param rois: shape is [-1, 4]. [x1, y1, x2, y2]
+        :param rois: A minibatch of RPN最终生成的proposals.   shape is [-1, 4]. [x1, y1, x2, y2]
         :return:
         '''
 
@@ -170,7 +171,7 @@ class DetectionNetwork(object):
                                                        scope=level_name)
                     pooled_features_list.append(pooled_features)
 
-                pooled_features = tf.concat(pooled_features_list, axis=0)  # [minibatch_size, H, W, C]
+                pooled_features = tf.concat(pooled_features_list, axis=0)  # [minibatch_size, H, W, C]=[minibatch_size, 7, 7, 256]
 
             # 6. inferecne rois in Fast-RCNN to obtain fc_flatten features
             if self.base_network_name.startswith('resnet'):
@@ -212,6 +213,8 @@ class DetectionNetwork(object):
                 #                                      scope='reg_fc')
 
                 """reg分支"""
+                # 不直接对ROI Pooling之后得到的rois进行全连接展开，而是先对rois多进行几次卷积，然后再展开
+                # Reference: https://github.com/SJTU-Thinklab-Det/DOTA-DOAI/tree/master/FPN_Tensorflow_Rotation
                 bbox_input_feat = pooled_features
                 for i in range(cfgs.ADD_EXTR_CONVS_FOR_REG):
                     bbox_input_feat = slim.conv2d(bbox_input_feat, num_outputs=256, kernel_size=[3, 3], stride=1,
@@ -234,6 +237,7 @@ class DetectionNetwork(object):
         with tf.variable_scope('Fast-RCNN'):
 
             # 5.0 concat feature maps:
+            # TODO:和"对金字塔proposals先pooling再concat"的做法区别在哪里???
 
             h, w = tf.shape(P_list[0])[1], tf.shape(P_list[0])[2]
 

@@ -274,7 +274,7 @@ def resnet_base(img_batch, scope_name, is_training=True):
                     pyramid_dict[l_name] = pyramid_dict[l_name] * dot_layer
                 mask_list.append(mask)
 
-    with tf.variable_scope("enlarge_RF"):  # TODO：什么作用？？？
+    with tf.variable_scope("enlarge_RF"):  # TODO：什么作用？？？ enlarge receptive field ?
         with slim.arg_scope([slim.conv2d], weights_regularizer=slim.l2_regularizer(cfgs.WEIGHT_DECAY),
                              normalizer_fn=None):
             for i, l_name in enumerate(cfgs.ENLAEGE_RF_LIST):
