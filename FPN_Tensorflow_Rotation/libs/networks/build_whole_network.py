@@ -46,6 +46,7 @@ class DetectionNetwork(object):
 
     def postprocess_fastrcnn(self, rois, bbox_ppred, scores, gpu_id):
         '''
+        FastRCNN后处理阶段（NMS等等）
         :param rois:[-1, 4]
         :param bbox_ppred: [-1, (cfgs.Class_num+1) * 5]
         :param scores: [-1, cfgs.Class_num + 1]
@@ -185,6 +186,7 @@ class DetectionNetwork(object):
             # 7. cls and reg in Fast-RCNN
             with slim.arg_scope([slim.fully_connected], weights_regularizer=slim.l2_regularizer(cfgs.WEIGHT_DECAY)):
 
+                """cls分支"""
                 cls_score = slim.fully_connected(fc_flatten,
                                                  num_outputs=cfgs.CLASS_NUM + 1,
                                                  weights_initializer=cfgs.INITIALIZER,
@@ -209,6 +211,7 @@ class DetectionNetwork(object):
                 #                                      activation_fn=None, trainable=self.is_training,
                 #                                      scope='reg_fc')
 
+                """reg分支"""
                 bbox_input_feat = pooled_features
                 for i in range(cfgs.ADD_EXTR_CONVS_FOR_REG):
                     bbox_input_feat = slim.conv2d(bbox_input_feat, num_outputs=256, kernel_size=[3, 3], stride=1,
@@ -298,10 +301,10 @@ class DetectionNetwork(object):
 
     def assign_levels(self, all_rois, labels=None, bbox_targets=None):
         '''
-
-        :param all_rois:
-        :param labels:
-        :param bbox_targets:
+        对RPN生成的proposals（ROIs）进行一个分类，找出它们各自来自于FPN的哪一层
+        :param all_rois:  RPN生成的所有Proposals
+        :param labels:  Proposal对应的label
+        :param bbox_targets:  Proposal对应的ground truth targets
         :return:
         '''
         with tf.name_scope('assign_levels'):
@@ -493,7 +496,7 @@ class DetectionNetwork(object):
         # 1. build base network
         mask_list = []
         if cfgs.USE_SUPERVISED_MASK:
-            P_list, mask_list = self.build_base_network(input_img_batch)  # [P2, P3, P4, P5, P6], [mask_p2, mask_p3]
+            P_list, mask_list = self.build_base_network(input_img_batch)  # [P2, P3, P4, P5, P6], [mask_p2, mask_p3, mask_p4, mask_p5]
         else:
             P_list = self.build_base_network(input_img_batch)  # [P2, P3, P4, P5, P6]
 
@@ -572,23 +575,32 @@ class DetectionNetwork(object):
 
         # 4. postprocess rpn proposals. such as: decode, clip, NMS
         with tf.variable_scope('postprocess_FPN'):
+            # 最终RPN生成的proposals及其对应的分数
             rois, roi_scores = postprocess_rpn_proposals(rpn_bbox_pred=fpn_box_pred,
                                                          rpn_cls_prob=fpn_cls_prob,
                                                          img_shape=img_shape,
                                                          anchors=all_anchors,
                                                          is_training=self.is_training)
 
+        ######################################################################################################
+        #                                         sample minibatch
+        # (分别sample出两批minibatch：一批(256,正：负=1:1)用于RPN回归[只需要水平gt样本]，一批用于Fast RCNN回归[需要水平和旋转gt样本])
+        ######################################################################################################
+
+        # sample minibatch
+        # 在原图的全部Anchor中选取出用于RPN回归的小批量anchor样本(256,正：负=1:1)。（后续与gt计算平移和缩放因子，然后结合RPN回归分支计算loss）
         if self.is_training:
             with tf.variable_scope('sample_anchors_minibatch'):
+                # 对于RPN生成的Anchors数组，筛选出一个正负比为1:1的大小为256的minibatch，其中的每一个anchor都有对应的正负，并确定其对应的gt缩放因子
                 fpn_labels, fpn_bbox_targets = \
                     tf.py_func(
                         anchor_target_layer,
                         [gtboxes_batch, img_shape, all_anchors],
                         [tf.float32, tf.float32])
-                fpn_bbox_targets = tf.reshape(fpn_bbox_targets, [-1, 4])
+                fpn_bbox_targets = tf.reshape(fpn_bbox_targets, [-1, 4])  # 平移变换t_x*,t_y*和缩放尺度t_w*,t_h*(RPN回归分支学习的目标)
                 fpn_labels = tf.to_int32(fpn_labels, name="to_int32")
                 fpn_labels = tf.reshape(fpn_labels, [-1])
-                self.add_anchor_img_smry(input_img_batch, all_anchors, fpn_labels, method=0)
+                self.add_anchor_img_smry(input_img_batch, all_anchors, fpn_labels, method=0)  # 根据rpn_labels区分正负anchor样本并在img中画出
 
             # --------------------------------------add smry-----------------------------------------------------------
 
@@ -600,7 +612,8 @@ class DetectionNetwork(object):
             tf.summary.scalar('ACC/fpn_accuracy', acc)
 
             with tf.control_dependencies([fpn_labels]):
-                with tf.variable_scope('sample_RCNN_minibatch'):
+                with tf.variable_scope('sample_RCNN_minibatch'):  # 在RPN输出的Proposal中筛选出用于Fast RCNN回归的小批量样本
+                    # 对这些sample出来的minibatch，找到它们对应的gt target
                     rois, labels, bbox_targets = \
                         tf.py_func(proposal_target_layer,
                                    [rois, gtboxes_batch, gtboxes_r_batch],
@@ -624,6 +637,7 @@ class DetectionNetwork(object):
         # -------------------------------------------------------------------------------------------------------------#
 
         # 5. build Fast-RCNN
+        # TODO: Figure out what this means?
         if not cfgs.USE_CONCAT:
             bbox_pred, cls_score = self.build_fastrcnn(P_list=P_list, rois_list=rois_list,
                                                        img_shape=img_shape)

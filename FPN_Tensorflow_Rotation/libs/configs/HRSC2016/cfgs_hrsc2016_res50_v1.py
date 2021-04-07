@@ -4,53 +4,22 @@ import os
 import tensorflow as tf
 
 """
-res152D_freezeC1C2_rmaskP2_Concat_800train_augMS_8conv_CTX
-
-This is your result for task 1:
-
-    mAP: 0.7898724310364561
-    ap of each class:
-    plane:0.9006183729548372,
-    baseball-diamond:0.84372788104372,
-    bridge:0.567618431335344,
-    ground-track-field:0.758221344745048,
-    small-vehicle:0.7932960821323363,
-    large-vehicle:0.7450420960292438,
-    ship:0.8650554150856641,
-    tennis-court:0.907718083481144,
-    basketball-court:0.8850621616004604,
-    storage-tank:0.8684151065606698,
-    soccer-ball-field:0.6960451226690271,
-    roundabout:0.690465622928499,
-    harbor:0.761470680192509,
-    swimming-pool:0.7992065528123767,
-    helicopter:0.766123511975963
-
-The submitted information is :
-
-Description: FPN_Res152D_DOTA1.0_20191106_v1_120w_ms
-Username: DetectionTeamCSU
-Institute: CSU
-Emailadress: yangxue@csu.edu.cn
-TeamMembers: YangXue
-
-
 """
 
 # ------------------------------------------------
-VERSION = 'FPN_Res152D_DOTA1.0_20191106_v1'
-NET_NAME = 'resnet152_v1d'
+VERSION = 'FPN_Res50D_HRSC2016_20210407_v1'
+NET_NAME = 'resnet50_v1d'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
 ROOT_PATH = os.path.abspath('../')
 print (20*"++--")
 print (ROOT_PATH)
-GPU_GROUP = "0,1"
+GPU_GROUP = "0"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
-SHOW_TRAIN_INFO_INTE = 50
-SMRY_ITER = 2000
-SAVE_WEIGHTS_INTE = 30000 * 2
+SHOW_TRAIN_INFO_INTE = 20
+SMRY_ITER = 200
+SAVE_WEIGHTS_INTE = 10000
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -163,13 +132,13 @@ MASK_TYPE = 'r'  # r or h
 BINARY_MASK = False
 SIGMOID_ON_DOT = False
 MASK_ACT_FET = True  # weather use mask generate 256 channels to dot feat.
-GENERATE_MASK_LIST = ["P2", "P3", "P4", "P5"]
+GENERATE_MASK_LIST = ["P2", "P3", "P4", "P5"]  # 在FPN生成的P_lists上，对对应层的Feature Map进行实例级去噪？
 ADDITION_LAYERS = [4, 4, 4, 4]  # add 4 layer to generate P2_mask, 2 layer to generate P3_mask
 ENLAEGE_RF_LIST = ["P2", "P3", "P4", "P5"]
 SUPERVISED_MASK_LOSS_WEIGHT = 0.1
 
 # -------------------------------------------Tricks config
-USE_CONCAT = True  # ？？？什么意思
+USE_CONCAT = True
 CONCAT_CHANNEL = 1024  # 256
 ROTATE_NMS_USE_GPU = True  # When Train, use GPU NMS, When Test, Use CPU NMS.
 

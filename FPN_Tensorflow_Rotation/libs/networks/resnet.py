@@ -86,6 +86,16 @@ def add_heatmap(feature_maps, name):
 
 
 def enrich_semantics_supervised(net, channels, num_layer, scope):
+    """
+    TODO: Understand what is dilated convolutions(空洞卷积)?
+    Step 1: The input feature map expands the receptive field by N dilated convolutions and a 1 × 1 convolutional layer.
+    (the values of N take the numbers of{1, 1, 1, 1, 1} on pyramid levels P3 to P7)
+    :param net:
+    :param channels:
+    :param num_layer:
+    :param scope:
+    :return:
+    """
     with tf.variable_scope(scope):
         for _ in range(num_layer-1):
             net = slim.conv2d(net, num_outputs=channels, kernel_size=[3, 3], stride=1, rate=2, padding="SAME")
@@ -96,16 +106,27 @@ def enrich_semantics_supervised(net, channels, num_layer, scope):
 
 
 def generate_mask(net, num_layer, level_name):
+    """
+
+    :param net: 输入的feature_dict中的某一层的feature map
+    :param num_layer:
+    :param level_name: 待处理的特征金字塔的某一层的名字Pi
+    :return:
+    """
+    # Step 1: 对input feature进行空洞卷积和1*1卷积
     G = enrich_semantics_supervised(net=net,
                                     num_layer=num_layer,
                                     channels=256, scope="enrich_%s" % level_name)
 
+    # channel维的维数
     last_dim = 2 if cfgs.BINARY_MASK else cfgs.CLASS_NUM + 1
+    """两个分支之一：mask分支（通道数为cfgs.CLASS_NUM + 1）"""
     mask = slim.conv2d(G, num_outputs=last_dim, kernel_size=[1, 1], stride=1, padding="SAME",
                        activation_fn=None,
                        scope='gmask_%s' % level_name)
 
     act_fn = tf.nn.sigmoid if cfgs.SIGMOID_ON_DOT else None
+    """两个分支之一：dot_layer分支"""
     dot_layer = slim.conv2d(G, num_outputs=256, kernel_size=[1, 1], stride=1, padding="SAME",
                             activation_fn=act_fn,
                             scope='gdot_%s' % level_name)
@@ -237,11 +258,12 @@ def resnet_base(img_batch, scope_name, is_training=True):
     #
     # -----------------------------------------------------------------------------------------------------------------
     #
-    mask_list = []
+    mask_list = []  # 用于计算supervised_mask_loss
     with tf.variable_scope("enrich_semantics"):
         with slim.arg_scope([slim.conv2d], weights_regularizer=slim.l2_regularizer(cfgs.WEIGHT_DECAY),
                              normalizer_fn=None):
             for i, l_name in enumerate(cfgs.GENERATE_MASK_LIST):
+                # 输入对应层的Feature Map，得到对应的mask和dot_layer
                 G, mask, dot_layer = generate_mask(net=pyramid_dict[l_name],
                                                    num_layer=cfgs.ADDITION_LAYERS[i],
                                                    level_name=l_name)
@@ -252,7 +274,7 @@ def resnet_base(img_batch, scope_name, is_training=True):
                     pyramid_dict[l_name] = pyramid_dict[l_name] * dot_layer
                 mask_list.append(mask)
 
-    with tf.variable_scope("enlarge_RF"):
+    with tf.variable_scope("enlarge_RF"):  # TODO：什么作用？？？
         with slim.arg_scope([slim.conv2d], weights_regularizer=slim.l2_regularizer(cfgs.WEIGHT_DECAY),
                              normalizer_fn=None):
             for i, l_name in enumerate(cfgs.ENLAEGE_RF_LIST):

@@ -1,7 +1,7 @@
 # DOTA-DOAI
 
 ## Abstract
-This repo is the codebase for our team to participate in DOTA related competitions, including rotation and horizontal detection. We mainly use [FPN](https://arxiv.org/abs/1612.03144)-based two-stage detector, and it is completed by [YangXue](https://yangxue0827.github.io/) and [YangJirui](https://github.com/yangJirui).      
+This repo is the codebase of **SCRDet++**(only InLD, without ImLD), including rotation and horizontal detection. We mainly use [FPN](https://arxiv.org/abs/1612.03144)-based two-stage detector, and it is completed by [YangXue](https://yangxue0827.github.io/) and [YangJirui](https://github.com/yangJirui).      
 
 **We also recommend a tensorflow-based [rotation detection benchmark](https://github.com/yangxue0827/RotationDetection), which is led by [YangXue](https://yangxue0827.github.io/).**
 
