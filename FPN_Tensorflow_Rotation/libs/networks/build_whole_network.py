@@ -456,6 +456,7 @@ class DetectionNetwork(object):
 
             with tf.variable_scope('FastRCNN_loss'):
                 if not cfgs.FAST_RCNN_MINIBATCH_SIZE == -1:
+                    # TODO:没有用IOU Smooth L1 Loss ??!! Regression Loss计算的时候没有用到Objectness！
                     reg_loss = losses.smooth_l1_loss_rcnn_r(bbox_pred=bbox_pred,
                                                             bbox_targets=bbox_targets,
                                                             label=labels,
