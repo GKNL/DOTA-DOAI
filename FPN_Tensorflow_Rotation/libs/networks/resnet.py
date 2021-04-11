@@ -70,7 +70,7 @@ def fusion_two_layer(C_i, P_j, scope):
 def add_heatmap(feature_maps, name):
     '''
 
-    :param feature_maps:[B, H, W, C]
+    :param feature_maps:[B, H, W, C]  包含所有通道的完整的feature map
     :return:
     '''
 
@@ -80,8 +80,8 @@ def add_heatmap(feature_maps, name):
         fig.colorbar(im)
         return fig
 
-    heatmap = tf.reduce_sum(feature_maps, axis=-1)
-    heatmap = tf.squeeze(heatmap, axis=0)
+    heatmap = tf.reduce_sum(feature_maps, axis=-1)  # 在channel维上进行求和
+    heatmap = tf.squeeze(heatmap, axis=0)  # 指定要删掉的为1的维度（batch维）
     tfp.summary.plot(name, figure_attention, [heatmap])
 
 
@@ -97,6 +97,9 @@ def enrich_semantics_supervised(net, channels, num_layer, scope):
     :return:
     """
     with tf.variable_scope(scope):
+        # 进行空洞卷积（具体作用如下：）
+        # 1.扩大感受野
+        # 2.捕获多尺度上下文信息（空洞卷积有一个参数可以设置dilation rate，具体含义就是在卷积核中填充 dilation rate-1 个0）
         for _ in range(num_layer-1):
             net = slim.conv2d(net, num_outputs=channels, kernel_size=[3, 3], stride=1, rate=2, padding="SAME")
 
@@ -107,7 +110,7 @@ def enrich_semantics_supervised(net, channels, num_layer, scope):
 
 def generate_mask(net, num_layer, level_name):
     """
-
+    InLD模块实现（上分支路部分）
     :param net: 输入的feature_dict中的某一层的feature map
     :param num_layer:
     :param level_name: 待处理的特征金字塔的某一层的名字Pi
@@ -135,6 +138,14 @@ def generate_mask(net, num_layer, level_name):
 
 
 def enlarge_RF(net, num_layer, k_size, rate):
+    """
+    扩大感受野（使用连续的空洞卷积实现）
+    :param net:
+    :param num_layer:
+    :param k_size:
+    :param rate:
+    :return:
+    """
 
     for _ in range(num_layer):
         net = slim.conv2d(net,
@@ -270,14 +281,14 @@ def resnet_base(img_batch, scope_name, is_training=True):
                 add_heatmap(G, name="MASK/G_%s" % l_name)
                 add_heatmap(mask, name="MASK/mask_%s" % l_name)
 
-                if cfgs.MASK_ACT_FET:
+                if cfgs.MASK_ACT_FET:  # InLD第二分支（dot_layer分支）与original feature map进行乘积运算
                     pyramid_dict[l_name] = pyramid_dict[l_name] * dot_layer
                 mask_list.append(mask)
 
-    with tf.variable_scope("enlarge_RF"):  # TODO：什么作用？？？ enlarge receptive field ?
+    with tf.variable_scope("enlarge_RF"):  # TODO：什么作用？？？ enlarge receptive field ?  增大感受野？
         with slim.arg_scope([slim.conv2d], weights_regularizer=slim.l2_regularizer(cfgs.WEIGHT_DECAY),
                              normalizer_fn=None):
-            for i, l_name in enumerate(cfgs.ENLAEGE_RF_LIST):
+            for i, l_name in enumerate(cfgs.ENLAEGE_RF_LIST):  # 再对每层进行空洞卷积以增大感受野
                 pyramid_dict[l_name] = enlarge_RF(net=pyramid_dict[l_name],
                                                   num_layer=2, k_size=3, rate=2)
             if "P6" in cfgs.LEVLES:
