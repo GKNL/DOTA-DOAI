@@ -4,11 +4,11 @@ import os
 import tensorflow as tf
 
 """
-FPN baseline
+FPN baseline + InLD
 """
 
 # ------------------------------------------------
-VERSION = 'FPN_Res50D_HRSC2016_20210410_v2'
+VERSION = 'FPN_Res50D_HRSC2016_20210408_v1'
 NET_NAME = 'resnet50_v1d'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -68,8 +68,8 @@ PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In op
 PIXEL_MEAN_ = [0.485, 0.456, 0.406]
 PIXEL_STD = [0.229, 0.224, 0.225]
 
-IMG_SHORT_SIDE_LEN = [800, 900, 1000, 1100, 600, 400]
-IMG_MAX_LENGTH = 1100
+IMG_SHORT_SIDE_LEN = 800
+IMG_MAX_LENGTH = 800
 CLASS_NUM = 1
 
 IMG_ROTATE = False
@@ -128,7 +128,7 @@ FAST_RCNN_POSITIVE_RATE = 0.25
 ADD_GTBOXES_TO_TRAIN = False
 
 # -------------------------------------------mask config
-USE_SUPERVISED_MASK = False
+USE_SUPERVISED_MASK = True  # InLD开关
 MASK_TYPE = 'r'  # r or h
 BINARY_MASK = False
 SIGMOID_ON_DOT = False

@@ -4,7 +4,7 @@ import os
 import tensorflow as tf
 
 """
-v2 + InLD
+v2 + InLD    [与78.9 mAP cfgs.py的区别：没用Fast RCNN concat; ADD_EXTR_CONVS_FOR_REG=False]
 This is your result for task 1:
 
     mAP: 0.7086517350178861

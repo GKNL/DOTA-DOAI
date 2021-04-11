@@ -19,13 +19,14 @@ def max_length_limitation(length, length_limitation):
 
 def short_side_resize(img_tensor, gtboxes_and_label, target_shortside_len, length_limitation=1200):
     '''
-
+    一般图片中的 h < w
     :param img_tensor:[h, w, c], gtboxes_and_label:[-1, 9].
     :param target_shortside_len:
     :param length_limitation: set max length to avoid OUT OF MEMORY
     :return:
     '''
     img_h, img_w = tf.shape(img_tensor)[0], tf.shape(img_tensor)[1]
+    # 较短边设置为target_shortside_len，宽：高保持长宽比（但长边最大不超过length_limitation）
     new_h, new_w = tf.cond(tf.less(img_h, img_w),
                            true_fn=lambda: (target_shortside_len,
                                             max_length_limitation(target_shortside_len * img_w // img_h, length_limitation)),

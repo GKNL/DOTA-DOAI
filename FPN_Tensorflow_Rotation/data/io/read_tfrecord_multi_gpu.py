@@ -47,6 +47,13 @@ def read_single_example_and_decode(filename_queue):
 
 
 def read_and_prepocess_single_img(filename_queue, shortside_len, is_training):
+    """
+
+    :param filename_queue:
+    :param shortside_len: cfgs.IMG_SHORT_SIDE_LEN
+    :param is_training:
+    :return:
+    """
 
     img_name, img, gtboxes_and_label, num_objects = read_single_example_and_decode(filename_queue)
 

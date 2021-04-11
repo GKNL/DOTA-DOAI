@@ -11,13 +11,13 @@ import random
 from libs.label_name_dict.label_dict import *
 from help_utils.tools import *
 
-tf.app.flags.DEFINE_string('VOC_dir', '/data/yangxue/dataset/DOTA/DOTA1.0/test-800/', 'Voc dir')
-tf.app.flags.DEFINE_string('xml_dir', 'labeltxt', 'xml dir')
-tf.app.flags.DEFINE_string('image_dir', 'images', 'image dir')
+tf.app.flags.DEFINE_string('VOC_dir', '/home/20184868@software.com/PM/pycharmProjects/RotationDet/dataloader/dataset/HRSC2016/VOCdevkit_train/', 'Voc dir')
+tf.app.flags.DEFINE_string('xml_dir', 'Annotations', 'xml dir')
+tf.app.flags.DEFINE_string('image_dir', 'JPEGImages', 'image dir')
 tf.app.flags.DEFINE_string('save_name', 'train', 'save name')
 tf.app.flags.DEFINE_string('save_dir', '../tfrecord/', 'save name')
-tf.app.flags.DEFINE_string('img_format', '.png', 'format of image')
-tf.app.flags.DEFINE_string('dataset', 'DOTA_test800', 'dataset')
+tf.app.flags.DEFINE_string('img_format', '.jpg', 'format of image')
+tf.app.flags.DEFINE_string('dataset', 'HRSC2016', 'dataset')
 FLAGS = tf.app.flags.FLAGS
 
 

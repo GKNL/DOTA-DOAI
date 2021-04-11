@@ -318,6 +318,7 @@ def train():
 
                 if step % cfgs.SHOW_TRAIN_INFO_INTE != 0 and step % cfgs.SMRY_ITER != 0:
                     _, global_stepnp = sess.run([train_op, global_step])
+                    # print(sess.run(img_name_batch))  # 打印当前batch训练图片的名称
 
                 else:
                     if step % cfgs.SHOW_TRAIN_INFO_INTE == 0 and step % cfgs.SMRY_ITER != 0:
