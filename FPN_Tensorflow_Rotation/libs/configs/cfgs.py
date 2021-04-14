@@ -5,10 +5,11 @@ import tensorflow as tf
 
 """
 FPN baseline + InLD
+# 测试使用uncropped HRSC2016数据集训练是否成功
 """
 
 # ------------------------------------------------
-VERSION = 'FPN_Res50D_HRSC2016_20210411_v1'
+VERSION = 'FPN_Res50D_HRSC2016_20210411_v1'  # FPN_Res50D_HRSC2016_20210414_test
 NET_NAME = 'resnet50_v1d'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -34,7 +35,8 @@ else:
 
 PRETRAINED_CKPT = ROOT_PATH + '/data/pretrained_weights/' + weights_name + '.ckpt'
 TRAINED_CKPT = os.path.join(ROOT_PATH, 'output/trained_weights')
-EVALUATE_DIR = ROOT_PATH + '/output/evaluate_result_pickle/'
+# EVALUATE_DIR = ROOT_PATH + '/output/evaluate_result_pickle/'
+EVALUATE_R_DIR = os.path.join(ROOT_PATH, 'output/evaluate_result_pickle/') + VERSION
 
 # ------------------------------------------ Train config
 RESTORE_FROM_RPN = False
@@ -43,6 +45,7 @@ FREEZE_BLOCKS = [True, True, False, False, False]  # for gluoncv backbone
 FIXED_BLOCKS = 0  # allow 0~3
 USE_07_METRIC = True
 CUDA9 = True
+EVAL_THRESHOLD = 0.5  # voc_eval配置参数
 
 RPN_LOCATION_LOSS_WEIGHT = 1.
 RPN_CLASSIFICATION_LOSS_WEIGHT = 1.0
@@ -129,7 +132,7 @@ ADD_GTBOXES_TO_TRAIN = False
 
 # -------------------------------------------mask config
 USE_SUPERVISED_MASK = True  # InLD开关
-MASK_TYPE = 'r'  # r or h
+MASK_TYPE = 'r'  # r or h  （gt标注框是水平 or 旋转）
 BINARY_MASK = False
 SIGMOID_ON_DOT = False
 MASK_ACT_FET = True  # weather use mask generate 256 channels to dot feat.

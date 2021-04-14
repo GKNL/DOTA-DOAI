@@ -36,7 +36,7 @@ def _write_voc_results_file(all_boxes, test_imgid_list, det_save_path):
           f.write('{:s} {:.3f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f}\n'.
                   format(index, dets[k, -1],
                          dets[k, 0] + 1, dets[k, 1] + 1,
-                         dets[k, 2] + 1, dets[k, 3] + 1, dets[k, 4] + 1))
+                         dets[k, 2] + 1, dets[k, 3] + 1, dets[k, 4] + 1))  # that is [img_name, score, x, y, w, h, theta]
 
 
 def write_voc_results_file(all_boxes, test_imgid_list, det_save_dir):
@@ -82,10 +82,16 @@ def parse_rec(filename):
     obj_struct['truncated'] = int(obj.find('truncated').text)
     obj_struct['difficult'] = int(obj.find('difficult').text)
     bbox = obj.find('bndbox')
-    rbox = [int(bbox.find('x1').text), int(bbox.find('y1').text),
-            int(bbox.find('x2').text), int(bbox.find('y2').text),
-            int(bbox.find('x3').text), int(bbox.find('y3').text),
-            int(bbox.find('x4').text), int(bbox.find('y4').text)]
+    # rbox = [int(bbox.find('x1').text), int(bbox.find('y1').text),
+    #         int(bbox.find('x2').text), int(bbox.find('y2').text),
+    #         int(bbox.find('x3').text), int(bbox.find('y3').text),
+    #         int(bbox.find('x4').text), int(bbox.find('y4').text)]
+
+    # used when test on cropped HRSC2016
+    rbox = [int(bbox.find('x0').text), int(bbox.find('y0').text), int(bbox.find('x1').text),
+            int(bbox.find('y1').text), int(bbox.find('x2').text), int(bbox.find('y2').text),
+            int(bbox.find('x3').text), int(bbox.find('y3').text)]
+
     rbox = np.array([rbox], np.float32)
     rbox = coordinate_convert.backward_convert(rbox, with_label=False)
     obj_struct['bbox'] = rbox

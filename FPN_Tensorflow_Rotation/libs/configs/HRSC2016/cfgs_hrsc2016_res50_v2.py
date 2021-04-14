@@ -8,7 +8,7 @@ FPN baseline + InLD
 """
 
 # ------------------------------------------------
-VERSION = 'FPN_Res50D_HRSC2016_20210408_v1'
+VERSION = 'FPN_Res50D_HRSC2016_20210411_v1'
 NET_NAME = 'resnet50_v1d'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -18,8 +18,8 @@ print (20*"++--")
 print (ROOT_PATH)
 GPU_GROUP = "0"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
-SHOW_TRAIN_INFO_INTE = 20
-SMRY_ITER = 200
+SHOW_TRAIN_INFO_INTE = 50
+SMRY_ITER = 500
 SAVE_WEIGHTS_INTE = 10000
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
@@ -34,7 +34,8 @@ else:
 
 PRETRAINED_CKPT = ROOT_PATH + '/data/pretrained_weights/' + weights_name + '.ckpt'
 TRAINED_CKPT = os.path.join(ROOT_PATH, 'output/trained_weights')
-EVALUATE_DIR = ROOT_PATH + '/output/evaluate_result_pickle/'
+# EVALUATE_DIR = ROOT_PATH + '/output/evaluate_result_pickle/'
+EVALUATE_R_DIR = os.path.join(ROOT_PATH, 'output/evaluate_result_pickle/') + VERSION
 
 # ------------------------------------------ Train config
 RESTORE_FROM_RPN = False
@@ -43,6 +44,7 @@ FREEZE_BLOCKS = [True, True, False, False, False]  # for gluoncv backbone
 FIXED_BLOCKS = 0  # allow 0~3
 USE_07_METRIC = True
 CUDA9 = True
+EVAL_THRESHOLD = 0.5  # voc_eval配置参数
 
 RPN_LOCATION_LOSS_WEIGHT = 1.
 RPN_CLASSIFICATION_LOSS_WEIGHT = 1.0

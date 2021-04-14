@@ -49,7 +49,7 @@ def draw_a_rectangel_in_img(draw_obj, box, color, width, method):
     :return:
     '''
     # color = (0, 255, 0)
-    if method == 0:
+    if method == 0:  # 水平
         x1, y1, x2, y2 = box[0], box[1], box[2], box[3]
         top_left, top_right = (x1, y1), (x2, y1)
         bottom_left, bottom_right = (x1, y2), (x2, y2)
@@ -66,7 +66,7 @@ def draw_a_rectangel_in_img(draw_obj, box, color, width, method):
         draw_obj.line(xy=[top_right, bottom_right],
                       fill=color,
                       width=width)
-    else:
+    else:  # 旋转
         x_c, y_c, w, h, theta = box[0], box[1], box[2], box[3], box[4]
         rect = ((x_c, y_c), (w, h), theta)
         rect = cv2.boxPoints(rect)

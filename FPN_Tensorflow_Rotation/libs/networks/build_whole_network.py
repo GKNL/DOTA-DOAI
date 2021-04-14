@@ -682,6 +682,7 @@ class DetectionNetwork(object):
 
     def get_restorer(self):
         checkpoint_path = tf.train.latest_checkpoint(os.path.join(cfgs.TRAINED_CKPT, cfgs.VERSION))
+        # checkpoint_path = "/home/20184868@software.com/PM/pycharmProjects/DOTA-DOAI/FPN_Tensorflow_Rotation/output/trained_weights/FPN_Res50D_HRSC2016_20210411_v1/HRSC2016_110000model.ckpt"  # 测试使用
 
         if checkpoint_path != None:
             restorer = tf.train.Saver()

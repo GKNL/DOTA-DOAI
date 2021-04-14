@@ -91,8 +91,8 @@ def enrich_semantics_supervised(net, channels, num_layer, scope):
     Step 1: The input feature map expands the receptive field by N dilated convolutions and a 1 × 1 convolutional layer.
     (the values of N take the numbers of{1, 1, 1, 1, 1} on pyramid levels P3 to P7)
     :param net:
-    :param channels:
-    :param num_layer:
+    :param channels:  空洞卷积输出的通道数
+    :param num_layer:  需要进行几次空洞卷积
     :param scope:
     :return:
     """
